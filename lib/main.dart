@@ -8,6 +8,10 @@ class LoveYouApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        primaryColor: Colors.pink,
+        accentColor: Colors.pink.withAlpha(190)
+      ),
       title: "I Love You",
       home: TimePage(),
     );
