@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class TimePage extends StatefulWidget {
@@ -7,10 +10,7 @@ class TimePage extends StatefulWidget {
 
 class _TimePageState extends State<TimePage> {
 
-  String days;
-  String hours;
-  String minutes;
-  String seconds;
+  final StreamController<Map<String, String>> _timeLeft = StreamController();
 
   @override
   void initState() {
@@ -26,27 +26,7 @@ class _TimePageState extends State<TimePage> {
         title: Text("I Love You", style: TextStyle(fontSize: 22),),
         centerTitle: true,
       ),
-      body: Center(
-        child: RichText(
-          text: TextSpan(
-            text: days,
-            style: TextStyle(
-              fontSize: 40,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-            children: <TextSpan>[
-              TextSpan(text: " dias\n", style: TextStyle(fontWeight: FontWeight.normal, fontSize: 35)),
-              TextSpan(text: hours),
-              TextSpan(text: " horas\n", style: TextStyle(fontWeight: FontWeight.normal, fontSize: 35)),
-              TextSpan(text: minutes),
-              TextSpan(text: " minutos\n", style: TextStyle(fontWeight: FontWeight.normal, fontSize: 35)),
-              TextSpan(text: seconds),
-              TextSpan(text: " segundos\n", style: TextStyle(fontWeight: FontWeight.normal, fontSize: 35)),
-            ]
-          ),
-        ),
-      ),
+      body: _buildBody(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         child: Icon(Icons.info_outline, color: Colors.white,),
@@ -55,11 +35,82 @@ class _TimePageState extends State<TimePage> {
     );
   }
 
-  void _startLoop() async {
-      while(true) {
-        _getDates();
-        await Future.delayed(Duration(seconds: 1));
+  Widget _buildBody() {
+    final children = _buildBackgroundChildren();
+    children.add(_buildMainContainer());
+
+    return Stack(
+      children: children,
+    );
+  }
+
+  List<Widget> _buildBackgroundChildren() {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+    final random = new Random();
+
+    return List<Widget>.generate(30, (index) {
+      return Positioned(
+        left: random.nextInt(width.toInt() - 1).toDouble(),
+        top: random.nextInt(height.toInt() - 1).toDouble(),
+        child: Transform.rotate(
+          angle: random.nextInt(180).toDouble(),
+          child: Text(
+            "I love you",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: (random.nextInt(8) + 10).toDouble()
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildMainContainer() {
+    return StreamBuilder<Map<String, String>>(
+      stream: _timeLeft.stream,
+      builder: (context, snapshot) {
+        if(snapshot.data == null) {
+          return Container();
+        }
+
+        final timeMap = snapshot.data;
+        String days = timeMap["days"];
+        String hours = timeMap["hours"];
+        String minutes = timeMap["minutes"];
+        String seconds = timeMap["seconds"];
+
+        return Center(
+          child: RichText(
+            text: TextSpan(
+              text: days,
+              style: TextStyle(
+                fontSize: 40,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              children: <TextSpan>[
+                TextSpan(text: " dias\n", style: TextStyle(fontWeight: FontWeight.normal, fontSize: 35)),
+                TextSpan(text: hours),
+                TextSpan(text: " horas\n", style: TextStyle(fontWeight: FontWeight.normal, fontSize: 35)),
+                TextSpan(text: minutes),
+                TextSpan(text: " minutos\n", style: TextStyle(fontWeight: FontWeight.normal, fontSize: 35)),
+                TextSpan(text: seconds),
+                TextSpan(text: " segundos\n", style: TextStyle(fontWeight: FontWeight.normal, fontSize: 35)),
+              ]
+            ),
+          ),
+        );
       }
+    );
+  }
+
+  void _startLoop() async {
+    while(true) {
+      _getDates();
+      await Future.delayed(Duration(seconds: 1));
+    }
   }
 
   void _getDates() {
@@ -68,12 +119,14 @@ class _TimePageState extends State<TimePage> {
 
     final dif = loveDate.difference(now);
     final splitResult = dif.toString().split(":");
-    setState(() {
-      days = (dif.inHours ~/ 24).toString();
-      hours = (dif.inHours % 24).toString();
-      minutes = splitResult[1];
-      seconds = splitResult[2].substring(0, 2); 
-    });
+    
+    final timeMap = Map<String, String>();
+    timeMap["days"] = (dif.inHours ~/ 24).toString();
+    timeMap["hours"] = (dif.inHours % 24).toString();
+    timeMap["minutes"] = splitResult[1];
+    timeMap["seconds"] = splitResult[2].substring(0, 2); 
+
+    _timeLeft.add(timeMap);
   }
 
   void _showDialog() {
