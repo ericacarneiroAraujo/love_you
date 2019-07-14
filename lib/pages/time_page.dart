@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:love_you/utils/love_yous.dart';
 
 class TimePage extends StatefulWidget {
   @override
@@ -54,9 +55,9 @@ class _TimePageState extends State<TimePage> {
         left: random.nextInt(width.toInt() - 1).toDouble(),
         top: random.nextInt(height.toInt() - 1).toDouble(),
         child: Transform.rotate(
-          angle: random.nextInt(180).toDouble(),
+          angle: random.nextInt(5).toDouble(),
           child: Text(
-            "I love you",
+            loveYouList[random.nextInt(loveYouList.length - 1)],
             style: TextStyle(
               color: Colors.white,
               fontSize: (random.nextInt(8) + 10).toDouble()
@@ -89,6 +90,7 @@ class _TimePageState extends State<TimePage> {
                 fontSize: 40,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
+                shadows: [Shadow(color: Colors.black, offset: Offset(1, 2))]
               ),
               children: <TextSpan>[
                 TextSpan(text: " dias\n", style: TextStyle(fontWeight: FontWeight.normal, fontSize: 35)),
